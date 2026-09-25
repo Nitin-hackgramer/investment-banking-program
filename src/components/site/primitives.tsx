@@ -414,3 +414,60 @@ export function useSlowZones(damp = 0.65) {
     return () => window.removeEventListener("wheel", onWheel);
   }, [damp]);
 }
+
+/* ---------- click effect ----------
+ * A champagne/scarlet ring blooms from the pointer with a small burst of
+ * sparks. Pure Web Animations API on throwaway nodes: no React state.
+ */
+export function ClickFx() {
+  useEffect(() => {
+    if (reduced()) return;
+    const layer = document.createElement("div");
+    layer.setAttribute("aria-hidden", "true");
+    layer.style.cssText = "position:fixed;inset:0;z-index:70;pointer-events:none;overflow:hidden";
+    document.body.appendChild(layer);
+
+    const spawn = (x: number, y: number) => {
+      const ring = document.createElement("span");
+      ring.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;border:2px solid oklch(0.86 0.07 82);box-shadow:0 0 0 1px oklch(0.63 0.23 28),inset 0 0 0 1px oklch(0.63 0.23 28 / .5)`;
+      layer.appendChild(ring);
+      ring
+        .animate(
+          [
+            { transform: "scale(0.3)", opacity: 1 },
+            { transform: "scale(3.4)", opacity: 0 },
+          ],
+          { duration: 620, easing: "cubic-bezier(0.23, 1, 0.32, 1)" },
+        )
+        .finished.then(() => ring.remove());
+
+      for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI * 2 + Math.random() * 0.5;
+        const dist = 26 + Math.random() * 26;
+        const dot = document.createElement("span");
+        const c = i % 2 ? "oklch(0.86 0.07 82)" : "oklch(0.63 0.23 28)";
+        dot.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:5px;height:5px;margin:-2.5px 0 0 -2.5px;border-radius:50%;background:${c};box-shadow:0 0 0 1px oklch(0.15 0.028 20 / .35)`;
+        layer.appendChild(dot);
+        dot
+          .animate(
+            [
+              { transform: "translate(0,0) scale(1)", opacity: 1 },
+              { transform: `translate(${Math.cos(a) * dist}px,${Math.sin(a) * dist}px) scale(0)`, opacity: 0 },
+            ],
+            { duration: 520, easing: "cubic-bezier(0.23, 1, 0.32, 1)" },
+          )
+          .finished.then(() => dot.remove());
+      }
+    };
+
+    const onDown = (e: globalThis.PointerEvent) => {
+      if (e.button === 0) spawn(e.clientX, e.clientY);
+    };
+    window.addEventListener("pointerdown", onDown, { passive: true });
+    return () => {
+      window.removeEventListener("pointerdown", onDown);
+      layer.remove();
+    };
+  }, []);
+  return null;
+}

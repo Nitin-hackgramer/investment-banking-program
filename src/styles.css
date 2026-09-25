@@ -147,6 +147,29 @@
   }
 }
 
+/* Scrollbar: oxblood track, crimson thumb. */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+::-webkit-scrollbar-track {
+  background: var(--ink);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--crimson);
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scarlet);
+}
+@supports not selector(::-webkit-scrollbar) {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--crimson) var(--ink);
+  }
+}
+
 /* Film grain: fixed, non-interactive, never on scroll containers. */
 body::after {
   content: "";

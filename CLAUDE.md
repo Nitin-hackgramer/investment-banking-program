@@ -33,6 +33,8 @@ TanStack Start (React 19, Vite 8, Tailwind v4, SSR) · Lovable-connected (never 
 - Curriculum (lg): card deck. Each chapter card slides up over the previous one, driven purely by CSS `--p` (set by `useStickyStep`).
 - Logo: import `src/assets/acdyon-logo.webp` directly (the `.asset.json` URL is a Lovable-CDN path that 404s locally).
 
+- Custom scrollbar (ink track, crimson thumb) in styles.css; `ClickFx` (primitives) spawns a champagne/scarlet ring + sparks on every primary click via WAAPI.
+
 ## Gotchas
 - Dev hydration warning about `<html>` attrs = browser extension, ignore.
 - Windows npm needs native bindings: `npm i --no-save @rolldown/binding-win32-x64-msvc@1.2.1 @oxc-parser/binding-win32-x64-msvc` (one command).

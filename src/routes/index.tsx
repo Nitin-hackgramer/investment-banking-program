@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useSlowZones } from "@/components/site/primitives";
+import { ClickFx, useSlowZones } from "@/components/site/primitives";
 import { Navbar } from "@/components/site/Navbar";
 import { Hero } from "@/components/site/Hero";
 import { Curriculum } from "@/components/site/Curriculum";
@@ -44,6 +44,7 @@ function Index() {
   useSlowZones();
   return (
     <div className="min-h-[100dvh] bg-background">
+      <ClickFx />
       <Navbar />
       <main>
         <Hero />
