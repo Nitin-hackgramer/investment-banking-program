@@ -57,7 +57,7 @@ export function Stats() {
             <Reveal key={s.sublabel} delay={i * 80}>
               <div className={cn("px-2 md:px-8", i > 0 && "md:border-l md:border-ink/15")}>
                 <dt className="eyebrow text-crimson">{s.sublabel}</dt>
-                <dd className="mt-3 font-display text-7xl leading-none sm:text-8xl">
+                <dd className="mt-3 font-display text-6xl leading-none sm:text-8xl">
                   <Counter value={s.value} suffix={s.suffix} />
                 </dd>
                 <p className="mt-2 text-sm text-muted-foreground">{s.label}</p>
@@ -97,7 +97,7 @@ export function WhyOperations() {
         description="Operations sits behind every executed trade. It validates, confirms, settles, reconciles and reports: the discipline that turns market activity into accurate books. Pick a pillar."
       />
 
-      <div className="mt-16 flex flex-col gap-3 lg:h-[34rem] lg:flex-row">
+      <div className="mt-10 flex flex-col gap-3 sm:mt-16 lg:h-[34rem] lg:flex-row">
         {whyPillars.map((p, i) => {
           const on = i === open;
           return (
@@ -171,27 +171,27 @@ export function WhatYouLearn() {
             Nine areas. <em className="text-crimson">One</em> connected picture.
           </>
         }
-        description="Sequenced from market fundamentals through to the daily reporting operations teams produce. Move your cursor across the grid."
+        description="Sequenced from market fundamentals through to the daily reporting operations teams produce."
       />
-      <div className="mt-16 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-10 grid grid-cols-2 gap-2.5 sm:mt-16 sm:gap-3 lg:grid-cols-4">
         {learningAreas.map((a, i) => {
           const big = a.size === "lg";
           return (
-            <Reveal key={a.title} delay={(i % 4) * 60} className={cn(big && "sm:col-span-2")}>
+            <Reveal key={a.title} delay={(i % 4) * 60} className={cn(big && "col-span-2")}>
               <Spot
                 as="article"
                 className={cn(
-                  "h-full min-h-56 overflow-hidden rounded-3xl p-7 transition-transform duration-300 ease-[var(--ease-out)] hover:-translate-y-1",
+                  "h-full min-h-40 overflow-hidden rounded-3xl p-4 transition-transform sm:min-h-56 sm:p-7 duration-300 ease-[var(--ease-out)] hover:-translate-y-1",
                   big ? "bg-crimson text-paper" : "border border-ink/10 bg-card",
                 )}
               >
-                <span className={cn("font-display text-6xl leading-none italic", big ? "text-paper/40" : "text-crimson/30")}>
+                <span className={cn("font-display text-4xl leading-none italic sm:text-6xl", big ? "text-paper/40" : "text-crimson/30")}>
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <h3 className={cn("mt-6 leading-none", big ? "text-4xl sm:text-5xl" : "text-3xl")}>
+                <h3 className={cn("mt-4 leading-none sm:mt-6", big ? "text-3xl sm:text-5xl" : "text-xl sm:text-3xl")}>
                   {a.title}
                 </h3>
-                <p className={cn("mt-3 max-w-sm text-sm leading-relaxed", big ? "text-paper/80" : "text-muted-foreground")}>
+                <p className={cn("mt-2 max-w-sm text-xs leading-relaxed sm:mt-3 sm:text-sm", big ? "text-paper/80" : "text-muted-foreground")}>
                   {a.blurb}
                 </p>
               </Spot>
@@ -225,8 +225,8 @@ export function Workflow() {
         />
       </div>
 
-      <div ref={ref} className="relative" style={{ height: `calc(100dvh + ${n * 45}vh)` }}>
-        <div className="sticky top-0 flex h-[100dvh] flex-col justify-center overflow-hidden px-5 pt-16 sm:px-8">
+      <div ref={ref} className="relative" style={{ height: `calc(100svh + ${n * 45}svh)` }}>
+        <div className="sticky top-0 flex h-[100svh] flex-col justify-center overflow-hidden px-5 pt-16 sm:px-8">
           <div className="mx-auto w-full max-w-7xl">
             {/* rail */}
             <div className="relative">
@@ -265,7 +265,7 @@ export function Workflow() {
               </ol>
             </div>
 
-            <div className="mt-[8vh] grid items-end gap-10 lg:grid-cols-[1.2fr_0.8fr]">
+            <div className="mt-[8svh] grid items-end gap-10 lg:grid-cols-[1.2fr_0.8fr]">
               <div key={active} className="relative">
                 <span
                   aria-hidden
@@ -284,7 +284,7 @@ export function Workflow() {
               </div>
 
               {/* trade ticket */}
-              <div className="hidden rounded-2xl border border-paper/25 bg-ink/80 p-5 shadow-[inset_0_1px_0_oklch(1_0_0/0.08)] backdrop-blur-xl sm:block">
+              <div className="hidden rounded-2xl border border-paper/25 bg-ink/80 p-5 shadow-[inset_0_1px_0_oklch(1_0_0/0.08)] md:backdrop-blur-xl sm:block">
                 <div className="flex items-center justify-between border-b border-paper/10 pb-3">
                   <p className="eyebrow text-scarlet">Trade GLX-4471</p>
                   <p className="eyebrow text-paper/50">
@@ -346,10 +346,10 @@ export function Projects() {
         description="Each case mirrors a problem operations teams handle: something has broken and needs to be traced, explained and resolved. Pick one and work through it."
       />
 
-      <div className="mt-16 grid gap-6 lg:grid-cols-[0.7fr_1.3fr]">
-        <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+      <div className="mt-10 grid gap-6 sm:mt-16 lg:grid-cols-[0.7fr_1.3fr]">
+        <ol className="-mx-5 flex snap-x snap-mandatory gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-1">
           {projects.map((x, i) => (
-            <li key={x.ref}>
+            <li key={x.ref} className="w-[78%] shrink-0 snap-start sm:w-auto">
               <button
                 type="button"
                 onClick={() => {
@@ -373,14 +373,14 @@ export function Projects() {
           ))}
         </ol>
 
-        <div className="overflow-hidden rounded-3xl bg-ink p-7 text-paper shadow-[0_40px_70px_-40px_oklch(0.3_0.12_25)] md:p-10">
+        <div className="overflow-hidden rounded-3xl bg-ink p-5 text-paper shadow-[0_40px_70px_-40px_oklch(0.3_0.12_25)] sm:p-7 md:p-10">
           <div className="flex items-center justify-between gap-3">
             <span className="eyebrow text-scarlet">{p.ref}</span>
             <Badge tone="dark">Case study</Badge>
           </div>
           <h3 className="mt-4 text-4xl leading-none sm:text-5xl">{p.title}</h3>
 
-          <div className="mt-8 flex gap-2" role="tablist" aria-label="Case stage">
+          <div className="mt-6 flex flex-wrap gap-2 sm:mt-8" role="tablist" aria-label="Case stage">
             {caseStages.map((s, i) => (
               <button
                 key={s}
@@ -420,7 +420,7 @@ export function Projects() {
             <button
               type="button"
               onClick={() => (stage < 2 ? setStage(stage + 1) : (setC((c + 1) % projects.length), setStage(0)))}
-              className="press rounded-full bg-paper px-6 py-2.5 text-sm text-crimson-deep transition-colors hover:bg-scarlet hover:text-paper"
+              className="press min-h-12 w-full rounded-full bg-paper px-6 py-3 text-sm text-crimson-deep sm:w-auto transition-colors hover:bg-scarlet hover:text-paper"
             >
               {stage < 2 ? `Reveal ${caseStages[stage + 1]!.toLowerCase()} →` : "Next case →"}
             </button>
@@ -451,7 +451,7 @@ export function Experience() {
 
   return (
     <Section id="experience" tone="ink">
-      <div className="grid gap-16 lg:grid-cols-[1fr_1fr] lg:items-center">
+      <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-16">
         <div>
           <SectionHeader
             eyebrow="Learning Experience"
@@ -463,7 +463,7 @@ export function Experience() {
             }
             description="Guided sessions, practical assignments and mentor review, tracked module by module across the six months."
           />
-          <ul className="mt-10 grid gap-x-8 gap-y-5 sm:grid-cols-2">
+          <ul className="mt-10 hidden gap-x-8 gap-y-5 sm:grid-cols-2 md:grid">
             {experiencePillars.map((p, i) => (
               <Reveal key={p.title} delay={i * 50}>
                 <li className="border-t border-paper/15 pt-4">
@@ -589,7 +589,7 @@ export function Outcomes() {
                   </span>
                   <span
                     className={cn(
-                      "min-w-0 flex-1 font-display text-3xl leading-tight transition-[color,transform] duration-300 ease-[var(--ease-out)] sm:text-4xl",
+                      "min-w-0 flex-1 font-display text-2xl leading-tight transition-[color,transform] duration-300 ease-[var(--ease-out)] sm:text-4xl",
                       on ? "translate-x-2 text-crimson italic" : "text-ink group-hover:translate-x-1",
                     )}
                   >
@@ -614,7 +614,7 @@ export function Outcomes() {
           })}
         </ul>
 
-        <Reveal delay={100}>
+        <Reveal delay={100} className="hidden lg:block">
           <ol className="rounded-3xl bg-ink p-8 text-paper md:p-10">
             <p className="eyebrow text-scarlet">Progression</p>
             {careerProgression.map((c, i) => (
@@ -644,7 +644,7 @@ export function Outcomes() {
 
 export function Mentors() {
   return (
-    <Section tone="bone">
+    <Section tone="bone" className="hidden md:block">
       <SectionHeader
         eyebrow="Mentors"
         title={
@@ -703,6 +703,7 @@ export function Certification() {
   const shown = name.trim() || "Your Name";
 
   const tilt = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== "mouse") return;
     const r = e.currentTarget.getBoundingClientRect();
     const x = (e.clientX - r.left) / r.width - 0.5;
     const y = (e.clientY - r.top) / r.height - 0.5;
@@ -762,7 +763,7 @@ export function Certification() {
               <p className="relative mt-7 text-sm text-muted-foreground">This is to certify that</p>
               <p
                 key={shown}
-                className="anim-pop relative mt-2 min-h-[1.1em] font-display text-5xl leading-tight break-words text-ink italic sm:text-6xl"
+                className="anim-pop relative mt-2 min-h-[1.1em] font-display text-4xl leading-tight break-words text-ink italic sm:text-6xl"
               >
                 {shown}
               </p>
@@ -821,7 +822,7 @@ export function Testimonials() {
   const go = (d: number) => setI((v) => (v + d + testimonials.length) % testimonials.length);
 
   return (
-    <Section tone="paper">
+    <Section tone="paper" className="hidden md:block">
       <SectionHeader
         eyebrow="Feedback"
         title={
@@ -867,7 +868,7 @@ export function Testimonials() {
 
 export function ProgramDetails() {
   return (
-    <Section tone="blush">
+    <Section tone="blush" className="hidden md:block">
       <div className="grid gap-14 lg:grid-cols-[1fr_1.1fr] lg:items-center">
         <SectionHeader
           eyebrow="Program Details"
@@ -938,7 +939,7 @@ export function Faq() {
             <Accordion type="single" collapsible className="w-full border-t border-ink/20">
               {list.map((f) => (
                 <AccordionItem key={f.q} value={f.q} className="border-b border-ink/20">
-                  <AccordionTrigger className="py-6 text-left font-display text-2xl font-normal hover:no-underline data-[state=open]:text-crimson">
+                  <AccordionTrigger className="py-6 text-left font-display text-xl font-normal hover:no-underline sm:text-2xl data-[state=open]:text-crimson">
                     {f.q}
                   </AccordionTrigger>
                   <AccordionContent className="pb-6 text-base leading-relaxed text-muted-foreground">
@@ -968,7 +969,7 @@ export function Faq() {
 
 export function Footer() {
   return (
-    <footer className="panel-ink px-5 pt-20 pb-10 sm:px-8">
+    <footer className="panel-ink px-5 pt-14 pb-28 sm:px-8 md:pt-20 md:pb-10">
       <div className="mx-auto w-full max-w-7xl">
         <a
           href="#top"

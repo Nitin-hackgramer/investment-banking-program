@@ -46,7 +46,7 @@ export function OperationsDashboard() {
 
   return (
     <div className="relative">
-      <div className="rounded-2xl border border-paper/15 bg-ink/70 p-4 shadow-[0_40px_80px_-30px_oklch(0.1_0.05_20/0.8),inset_0_1px_0_oklch(1_0_0/0.08)] backdrop-blur-xl sm:p-5">
+      <div className="rounded-2xl border border-paper/15 bg-ink/70 p-4 shadow-[0_40px_80px_-30px_oklch(0.1_0.05_20/0.8),inset_0_1px_0_oklch(1_0_0/0.08)] md:backdrop-blur-xl sm:p-5">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-paper/10 pb-4">
           <div className="min-w-0">
             <p className="eyebrow text-scarlet">Operations desk</p>

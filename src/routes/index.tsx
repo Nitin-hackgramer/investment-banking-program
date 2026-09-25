@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ClickFx, useSlowZones } from "@/components/site/primitives";
 import { Navbar } from "@/components/site/Navbar";
+import { MobileBar } from "@/components/site/MobileBar";
 import { Hero } from "@/components/site/Hero";
 import { Curriculum } from "@/components/site/Curriculum";
 import { ApplySection } from "@/components/site/Apply";
@@ -67,6 +68,7 @@ function Index() {
         <ApplySection />
       </main>
       <Footer />
+      <MobileBar />
     </div>
   );
 }

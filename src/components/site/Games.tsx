@@ -1,7 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { careerRoles } from "@/data/program";
 import { cn } from "@/lib/utils";
-import { ApplyButton, Reveal, Section, SectionHeader, cssVars } from "./primitives";
+import {
+  ApplyButton,
+  Reveal,
+  Section,
+  SectionHeader,
+  buzz,
+  cssVars,
+  shareText,
+  useCanShare,
+} from "./primitives";
 
 /* =====================================================================
  * BREAK HUNTER — a reconciliation game. Compare our books to the
@@ -86,6 +95,8 @@ export function BreakHunter() {
   const [secs, setSecs] = useState(levels[0]!.secs);
   const [scores, setScores] = useState<number[]>([]);
   const [shake, setShake] = useState<string | null>(null);
+  const [run, setRun] = useState(0);
+  const canShare = useCanShare();
 
   const lv = levels[level]!;
   const breaks = lv.rows.filter((x) => x.brk);
@@ -101,7 +112,18 @@ export function BreakHunter() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, secs]);
 
+  // Swipe deck (phones): decisions arrive one at a time, so build the set here
+  // instead of reading stale state when the last card finishes the shift.
+  const decide = (id: string, flag: boolean, last: boolean) => {
+    const n = new Set(picked);
+    if (flag) n.add(id);
+    else n.delete(id);
+    setPicked(n);
+    if (last) finish(n);
+  };
+
   const start = (l: number) => {
+    setRun((r) => r + 1);
     setLevel(l);
     setPicked(new Set());
     setSecs(levels[l]!.secs);
@@ -120,14 +142,14 @@ export function BreakHunter() {
     });
   };
 
-  const tally = () => {
-    const good = lv.rows.filter((x) => x.brk && picked.has(x.id)).length;
-    const bad = [...picked].filter((id) => !lv.rows.find((x) => x.id === id)?.brk).length;
+  const tally = (set: Set<string> = picked) => {
+    const good = lv.rows.filter((x) => x.brk && set.has(x.id)).length;
+    const bad = [...set].filter((id) => !lv.rows.find((x) => x.id === id)?.brk).length;
     return { good, bad, missed: breaks.length - good };
   };
 
-  function finish() {
-    const { good, bad } = tally();
+  function finish(set: Set<string> = picked) {
+    const { good, bad } = tally(set);
     const bonus = good === breaks.length && bad === 0 ? Math.max(0, secs) : 0;
     setScores((s) => [...s.slice(0, level), Math.max(0, good * 15 - bad * 8 + bonus)]);
     setPhase("review");
@@ -139,7 +161,7 @@ export function BreakHunter() {
 
   return (
     <Section id="break-hunter" tone="bone">
-      <div className="grid gap-14 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+      <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
         <div className="lg:sticky lg:top-28 lg:self-start">
           <SectionHeader
             eyebrow="Playable · Reconciliation"
@@ -148,7 +170,7 @@ export function BreakHunter() {
                 Find the <em className="text-crimson">breaks</em> before the clock does.
               </>
             }
-            description="This is the job in miniature. Our books on the left, the custodian's on the right. Tap every trade that disagrees. Miss one and cash goes missing. Cry wolf and you lose credibility."
+            description="This is the job in miniature. Compare our books with the custodian's and flag every trade that disagrees. Miss one and cash goes missing. Cry wolf and you lose credibility."
           />
           <Reveal delay={100}>
             <dl className="mt-10 grid max-w-md grid-cols-3 gap-4 border-t border-ink/15 pt-6">
@@ -193,7 +215,7 @@ export function BreakHunter() {
             </div>
 
             {phase === "intro" || phase === "done" ? (
-              <div className="px-6 py-16 text-center sm:px-12">
+              <div className="px-5 py-12 text-center sm:px-12 sm:py-16">
                 {phase === "done" ? (
                   <>
                     <p className="eyebrow text-crimson">Final result</p>
@@ -203,8 +225,19 @@ export function BreakHunter() {
                       Reconciliation is Module 05 of the program, with real break aging, escalation
                       and resolution on top of what you just did in 2 minutes.
                     </p>
-                    <div className="mt-8 flex flex-wrap justify-center gap-3">
-                      <ApplyButton>Turn this into a career</ApplyButton>
+                    <div className="mt-8 grid gap-3 sm:flex sm:flex-wrap sm:justify-center">
+                      <ApplyButton className="min-h-14">Turn this into a career</ApplyButton>
+                      {canShare ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            shareText(`I scored ${total} on Break Hunter and ranked "${rank.t}". Can you beat me?`)
+                          }
+                          className="press min-h-14 rounded-full bg-ink px-6 text-sm text-paper hover:bg-crimson"
+                        >
+                          Share my rank
+                        </button>
+                      ) : null}
                       <button
                         type="button"
                         onClick={() => {
@@ -212,7 +245,7 @@ export function BreakHunter() {
                           setLevel(0);
                           setPhase("intro");
                         }}
-                        className="press rounded-full border border-ink/25 px-6 py-3 text-sm hover:border-crimson hover:text-crimson"
+                        className="press min-h-14 rounded-full border border-ink/25 px-6 py-3 text-sm hover:border-crimson hover:text-crimson"
                       >
                         Play again
                       </button>
@@ -230,7 +263,7 @@ export function BreakHunter() {
                     <button
                       type="button"
                       onClick={() => start(0)}
-                      className="press mt-8 rounded-full bg-crimson px-8 py-4 text-base font-medium text-paper transition-colors hover:bg-scarlet"
+                      className="press mt-8 min-h-14 w-full rounded-full bg-crimson px-8 py-4 text-base font-medium text-paper transition-colors hover:bg-scarlet sm:w-auto"
                     >
                       Start shift 1
                     </button>
@@ -239,7 +272,13 @@ export function BreakHunter() {
               </div>
             ) : (
               <>
-                <div className="eyebrow grid grid-cols-[4.2rem_1fr_1fr] gap-3 border-b border-ink/10 bg-bone px-5 py-2.5 text-muted-foreground sm:grid-cols-[5rem_1fr_1fr]">
+                {phase === "play" ? (
+                  <div className="px-5 py-6 md:hidden">
+                    <SwipeDeck key={`${level}-${run}`} rows={lv.rows} onDecide={decide} />
+                  </div>
+                ) : null}
+                <div className={phase === "play" ? "hidden md:block" : undefined}>
+                <div className="eyebrow hidden grid-cols-[4.2rem_1fr_1fr] gap-3 border-b border-ink/10 bg-bone px-5 py-2.5 text-muted-foreground sm:grid sm:grid-cols-[5rem_1fr_1fr]">
                   <span>Trade</span>
                   <span>Our books</span>
                   <span>Custodian</span>
@@ -259,7 +298,7 @@ export function BreakHunter() {
                           disabled={review}
                           onClick={() => toggle(x.id)}
                           className={cn(
-                            "grid w-full grid-cols-[4.2rem_1fr_1fr] gap-3 px-5 py-3 text-left font-mono text-[0.7rem] leading-snug transition-colors duration-150 sm:grid-cols-[5rem_1fr_1fr] sm:text-xs",
+                            "grid w-full grid-cols-1 gap-1 px-5 py-3.5 text-left font-mono text-xs leading-snug transition-colors duration-150 sm:grid-cols-[5rem_1fr_1fr] sm:gap-3 sm:py-3",
                             !review && !on && "hover:bg-blush/40",
                             !review && on && "bg-crimson text-paper",
                             hit && "bg-positive/15",
@@ -269,14 +308,22 @@ export function BreakHunter() {
                           )}
                         >
                           <span className="font-medium">{x.id}</span>
-                          <span>{x.ours}</span>
+                          <span>
+                            <b className="mr-2 text-[0.6rem] font-normal tracking-widest uppercase opacity-60 sm:hidden">
+                              Ours
+                            </b>
+                            {x.ours}
+                          </span>
                           <span className={x.theirs ? "" : "opacity-50 italic"}>
+                            <b className="mr-2 text-[0.6rem] font-normal tracking-widest uppercase opacity-60 sm:hidden">
+                              Theirs
+                            </b>
                             {x.theirs ?? "— no record —"}
                           </span>
                           {review && x.brk ? (
                             <span
                               className={cn(
-                                "col-span-3 mt-1 font-sans text-xs leading-relaxed not-italic",
+                                "mt-1 font-sans text-xs leading-relaxed not-italic sm:col-span-3",
                                 hit ? "text-ink" : "text-crimson-deep",
                               )}
                             >
@@ -284,7 +331,7 @@ export function BreakHunter() {
                             </span>
                           ) : null}
                           {fp ? (
-                            <span className="col-span-3 mt-1 font-sans text-xs text-muted-foreground no-underline">
+                            <span className="mt-1 font-sans text-xs text-muted-foreground no-underline sm:col-span-3">
                               False alarm. These two agree.
                             </span>
                           ) : null}
@@ -293,17 +340,19 @@ export function BreakHunter() {
                     );
                   })}
                 </ul>
+                </div>
 
                 <div className="flex flex-wrap items-center justify-between gap-4 border-t border-ink/10 bg-bone px-5 py-4">
                   {phase === "play" ? (
                     <>
                       <p className="text-xs text-muted-foreground">
-                        Tap a row to flag it. Tap again to unflag.
+                        <span className="md:hidden">Swipe right for a break, left for clean.</span>
+                        <span className="hidden md:inline">Tap a row to flag it. Tap again to unflag.</span>
                       </p>
                       <button
                         type="button"
-                        onClick={finish}
-                        className="press rounded-full bg-ink px-6 py-2.5 text-sm text-paper transition-colors hover:bg-crimson"
+                        onClick={() => finish()}
+                        className="press min-h-11 rounded-full bg-ink px-6 py-2.5 text-sm text-paper transition-colors hover:bg-crimson"
                       >
                         Submit shift
                       </button>
@@ -321,7 +370,7 @@ export function BreakHunter() {
                       <button
                         type="button"
                         onClick={() => (level + 1 < levels.length ? start(level + 1) : setPhase("done"))}
-                        className="press rounded-full bg-crimson px-6 py-2.5 text-sm text-paper transition-colors hover:bg-scarlet"
+                        className="press min-h-11 rounded-full bg-crimson px-6 py-2.5 text-sm text-paper transition-colors hover:bg-scarlet"
                       >
                         {level + 1 < levels.length ? `Start shift ${level + 2}` : "See my rank"}
                       </button>
@@ -397,7 +446,9 @@ export function RoleFinder() {
   const [score, setScore] = useState<number[]>(() => careerRoles.map(() => 0));
   const done = step >= questions.length;
 
+  const canShare = useCanShare();
   const answer = (w: number[]) => {
+    buzz(10);
     setScore((s) => s.map((v, i) => (w.includes(i) ? v + 1 : v)));
     setStep((s) => s + 1);
   };
@@ -425,9 +476,9 @@ export function RoleFinder() {
         />
 
         <Reveal delay={100}>
-          <div className="rounded-3xl border border-paper/20 bg-ink/85 p-6 shadow-[0_40px_80px_-40px_oklch(0.1_0.05_20),inset_0_1px_0_oklch(1_0_0/0.08)] backdrop-blur-xl sm:p-8">
+          <div className="rounded-3xl border border-paper/20 bg-ink/85 flex flex-col p-5 shadow-[0_40px_80px_-40px_oklch(0.1_0.05_20),inset_0_1px_0_oklch(1_0_0/0.08)] md:backdrop-blur-xl sm:p-8">
             {/* live bars */}
-            <ul className="grid gap-1.5" aria-label="Live role scores">
+            <ul className="order-2 mt-6 grid gap-1.5 border-t border-paper/10 pt-6 sm:order-1 sm:mt-0 sm:border-0 sm:pt-0" aria-label="Live role scores">
               {careerRoles.map((role, i) => (
                 <li key={role} className="grid grid-cols-[minmax(0,1fr)_5rem] items-center gap-3">
                   <span
@@ -451,7 +502,7 @@ export function RoleFinder() {
               ))}
             </ul>
 
-            <div className="mt-7 border-t border-paper/10 pt-7">
+            <div className="order-1 sm:order-2 sm:mt-7 sm:border-t sm:border-paper/10 sm:pt-7">
               {done ? (
                 <div key="result" className="anim-swap">
                   <p className="eyebrow text-scarlet">Your best fit</p>
@@ -475,6 +526,17 @@ export function RoleFinder() {
                     >
                       Retake
                     </button>
+                    {canShare ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          shareText(`My best-fit operations role: ${careerRoles[top]}. Find yours in 4 questions.`)
+                        }
+                        className="press rounded-full border border-paper/30 px-6 py-3 text-sm text-paper hover:bg-paper/10"
+                      >
+                        Share
+                      </button>
+                    ) : null}
                   </div>
                 </div>
               ) : (
@@ -495,7 +557,7 @@ export function RoleFinder() {
                       ))}
                     </div>
                   </div>
-                  <p className="mt-4 font-display text-3xl leading-tight text-paper">
+                  <p className="mt-4 font-display text-2xl leading-tight text-paper sm:text-3xl">
                     {questions[step]!.q}
                   </p>
                   <div className="mt-5 grid gap-2">
@@ -505,7 +567,7 @@ export function RoleFinder() {
                         type="button"
                         onClick={() => answer(o.w)}
                         style={cssVars({ "--i": i + 1 })}
-                        className="anim-swap press rounded-xl border border-paper/15 px-4 py-3 text-left text-sm text-paper/90 transition-colors duration-150 hover:border-scarlet hover:bg-scarlet/15"
+                        className="anim-swap press min-h-12 rounded-xl border border-paper/15 px-4 py-3 text-left text-sm text-paper/90 transition-colors duration-150 hover:border-scarlet hover:bg-scarlet/15"
                       >
                         {o.t}
                       </button>
@@ -518,5 +580,140 @@ export function RoleFinder() {
         </Reveal>
       </div>
     </Section>
+  );
+}
+
+/* Phones: one trade per card. Drag right = break, left = clean (or tap the buttons). */
+function SwipeDeck({
+  rows,
+  onDecide,
+}: {
+  rows: Row[];
+  onDecide: (id: string, flag: boolean, last: boolean) => void;
+}) {
+  const [i, setI] = useState(0);
+  const card = useRef<HTMLDivElement>(null);
+  const from = useRef<number | null>(null);
+  const dx = useRef(0);
+  const busy = useRef(false);
+  const row = rows[i];
+  const next = rows[i + 1];
+
+  const move = (x: number, ease: boolean) => {
+    const el = card.current;
+    if (!el) return;
+    el.style.transition = ease ? "transform 240ms cubic-bezier(0.23,1,0.32,1), opacity 240ms" : "none";
+    el.style.transform = `translateX(${x}px) rotate(${x / 20}deg)`;
+    el.style.setProperty("--k", String(Math.max(-1, Math.min(1, x / 90))));
+  };
+
+  if (!row) return null;
+
+  const decide = (flag: boolean) => {
+    if (busy.current) return;
+    busy.current = true;
+    buzz(flag ? 28 : 10);
+    move(flag ? 480 : -480, true);
+    if (card.current) card.current.style.opacity = "0";
+    setTimeout(() => {
+      busy.current = false;
+      onDecide(row.id, flag, i === rows.length - 1);
+      setI((v) => v + 1);
+    }, 200);
+  };
+
+  const down = (e: PointerEvent<HTMLDivElement>) => {
+    if (busy.current) return;
+    from.current = e.clientX;
+    dx.current = 0;
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const drag = (e: PointerEvent<HTMLDivElement>) => {
+    if (from.current === null) return;
+    dx.current = e.clientX - from.current;
+    move(dx.current, false);
+  };
+  const up = () => {
+    if (from.current === null) return;
+    from.current = null;
+    if (Math.abs(dx.current) > 90) decide(dx.current > 0);
+    else move(0, true);
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between">
+        <p className="eyebrow tabular text-muted-foreground">
+          Trade {i + 1} of {rows.length}
+        </p>
+        <div className="flex gap-1" aria-hidden>
+          {rows.map((r, k) => (
+            <span key={r.id} className={cn("h-1 w-3 rounded-full", k < i ? "bg-crimson" : k === i ? "bg-ink" : "bg-ink/15")} />
+          ))}
+        </div>
+      </div>
+
+      <div className="relative mt-4 h-[19rem]">
+        {next ? (
+          <div aria-hidden className="absolute inset-x-3 top-3 bottom-0 rounded-3xl border border-ink/10 bg-bone" />
+        ) : null}
+        <div
+          key={row.id}
+          ref={card}
+          onPointerDown={down}
+          onPointerMove={drag}
+          onPointerUp={up}
+          onPointerCancel={up}
+          style={{ touchAction: "pan-y" }}
+          className="absolute inset-0 rounded-3xl border border-ink/15 bg-paper p-5 shadow-[0_24px_40px_-24px_oklch(0.3_0.1_25/0.6)]"
+        >
+          <div className="flex items-baseline justify-between">
+            <p className="font-mono text-sm font-medium">{row.id}</p>
+            <p className="eyebrow text-muted-foreground">{row.sec}</p>
+          </div>
+          <div className="mt-4 rounded-2xl bg-bone p-4">
+            <p className="eyebrow text-muted-foreground">Our books</p>
+            <p className="mt-1 font-mono text-base break-words sm:text-lg">{row.ours}</p>
+          </div>
+          <div className="mt-2 rounded-2xl bg-bone p-4">
+            <p className="eyebrow text-muted-foreground">Custodian</p>
+            <p className={cn("mt-1 font-mono text-base break-words sm:text-lg", !row.theirs && "opacity-50 italic")}>
+              {row.theirs ?? "— no record —"}
+            </p>
+          </div>
+          <span
+            aria-hidden
+            className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-6 rounded-xl border-4 border-crimson bg-paper/85 px-4 py-1 font-display text-5xl text-crimson"
+            style={{ opacity: "max(var(--k, 0), 0)" }}
+          >
+            BREAK
+          </span>
+          <span
+            aria-hidden
+            className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-6 rounded-xl border-4 border-positive bg-paper/85 px-4 py-1 font-display text-5xl text-ink"
+            style={{ opacity: "max(calc(var(--k, 0) * -1), 0)" }}
+          >
+            CLEAN
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-5 grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={() => decide(false)}
+          className="press min-h-14 rounded-full border border-ink/25 text-base font-medium active:bg-bone"
+        >
+          ← Clean
+        </button>
+        <button
+          type="button"
+          onClick={() => decide(true)}
+          className="press min-h-14 rounded-full bg-crimson text-base font-medium text-paper active:bg-scarlet"
+        >
+          Break →
+        </button>
+      </div>
+    </div>
   );
 }

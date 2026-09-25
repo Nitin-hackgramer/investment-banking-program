@@ -76,7 +76,8 @@ export function useStickyStep(steps: number) {
     const update = () => {
       raf = 0;
       const r = el.getBoundingClientRect();
-      const total = Math.max(1, r.height - window.innerHeight);
+      const vh = (el.firstElementChild as HTMLElement | null)?.offsetHeight ?? window.innerHeight;
+      const total = Math.max(1, r.height - vh);
       const p = Math.min(1, Math.max(0, -r.top / total));
       el.style.setProperty("--p", p.toFixed(4));
       setActive(Math.min(steps - 1, Math.floor(p * steps)));
@@ -99,7 +100,8 @@ export function useStickyStep(steps: number) {
       const el = ref.current;
       if (!el) return;
       const top = el.getBoundingClientRect().top + window.scrollY;
-      const total = el.offsetHeight - window.innerHeight;
+      const vh = (el.firstElementChild as HTMLElement | null)?.offsetHeight ?? window.innerHeight;
+      const total = el.offsetHeight - vh;
       window.scrollTo({ top: top + ((i + 0.5) / steps) * total, behavior: "smooth" });
     },
     [steps],
@@ -119,13 +121,27 @@ export function Spot({
   className?: string;
   as?: "div" | "article" | "li";
 }) {
+  const ref = useRef<HTMLElement>(null);
   const onMove = (e: PointerEvent<HTMLElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
     e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
     e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
   };
+
+  // Touch has no hover: light the card while it sits in the middle band of the screen.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !window.matchMedia("(hover: none)").matches) return;
+    const io = new IntersectionObserver(
+      ([e]) => el.toggleAttribute("data-lit", !!e?.isIntersecting),
+      { rootMargin: "-32% 0px -32% 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   return (
-    <Tag onPointerMove={onMove} className={cn("spot", className)}>
+    <Tag ref={ref as never} onPointerMove={onMove} className={cn("spot", className)}>
       {children}
     </Tag>
   );
@@ -203,7 +219,7 @@ export function Section({
     <section
       id={id}
       className={cn(
-        "relative scroll-mt-20 px-5 py-24 sm:px-8 md:py-36",
+        "relative scroll-mt-20 px-5 py-16 sm:px-8 sm:py-24 md:py-36",
         tone === "paper" && "bg-paper text-ink",
         tone === "bone" && "bg-bone text-ink",
         tone === "blush" && "bg-blush text-ink",
@@ -247,7 +263,7 @@ export function SectionHeader({
       </div>
       <h2
         className={cn(
-          "mt-6 text-5xl leading-[0.98] text-balance sm:text-6xl md:text-7xl",
+          "mt-5 text-[2.6rem] leading-[1] text-balance sm:mt-6 sm:text-6xl md:text-7xl",
           dark ? "text-paper" : "text-ink",
         )}
       >
@@ -441,8 +457,9 @@ export function ClickFx() {
         )
         .finished.then(() => ring.remove());
 
-      for (let i = 0; i < 8; i++) {
-        const a = (i / 8) * Math.PI * 2 + Math.random() * 0.5;
+      const n = window.matchMedia("(pointer: coarse)").matches ? 5 : 8;
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2 + Math.random() * 0.5;
         const dist = 26 + Math.random() * 26;
         const dot = document.createElement("span");
         const c = i % 2 ? "oklch(0.86 0.07 82)" : "oklch(0.63 0.23 28)";
@@ -471,3 +488,20 @@ export function ClickFx() {
   }, []);
   return null;
 }
+
+/* ---------- small mobile helpers ---------- */
+
+/** Short haptic tick on devices that support it (Android Chrome). No-op elsewhere. */
+export const buzz = (ms = 12) => {
+  if (typeof navigator !== "undefined") navigator.vibrate?.(ms);
+};
+
+/** True only on the client after mount, so SSR markup never differs. */
+export function useCanShare() {
+  const [can, setCan] = useState(false);
+  useEffect(() => setCan(typeof navigator.share === "function"), []);
+  return can;
+}
+
+export const shareText = (text: string) =>
+  navigator.share?.({ title: "Acdyon IB Operations", text, url: window.location.origin }).catch(() => {});

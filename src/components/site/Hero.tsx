@@ -15,7 +15,7 @@ export function Hero() {
     <section
       id="top"
       onPointerMove={onMove}
-      className="panel-crimson relative min-h-[100dvh] overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28"
+      className="panel-crimson relative min-h-[100svh] overflow-hidden pt-24 pb-14 sm:pt-32 md:pt-40 md:pb-28"
     >
       <div
         aria-hidden
@@ -27,12 +27,12 @@ export function Hero() {
       />
       <span
         aria-hidden
-        className="pointer-events-none absolute -bottom-10 -left-4 select-none font-display text-[30vw] leading-none text-paper/[0.06] italic"
+        className="pointer-events-none absolute -bottom-10 -left-4 hidden select-none md:block font-display text-[30vw] leading-none text-paper/[0.06] italic"
       >
         Ops
       </span>
 
-      <div className="relative mx-auto grid w-full max-w-7xl gap-16 px-5 sm:px-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+      <div className="relative mx-auto grid w-full max-w-7xl gap-10 px-5 sm:px-8 lg:gap-16 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
         <div>
           <Reveal>
             <span className="eyebrow inline-flex items-center gap-2 rounded-full border border-paper/30 px-4 py-2 text-paper/90">
@@ -42,7 +42,7 @@ export function Hero() {
           </Reveal>
 
           <Reveal delay={80}>
-            <h1 className="mt-8 text-[clamp(3.4rem,9vw,8rem)] leading-[0.92] text-balance text-paper">
+            <h1 className="mt-8 text-[clamp(2.9rem,9vw,8rem)] leading-[0.92] text-balance text-paper">
               The desk behind <em className="text-champagne">every</em> trade.
             </h1>
           </Reveal>
@@ -54,18 +54,18 @@ export function Hero() {
           </Reveal>
 
           <Reveal delay={240}>
-            <div className="mt-10 flex flex-wrap gap-3">
-              <ApplyButton size="lg" variant="bone">
+            <div className="mt-8 grid grid-cols-1 gap-3 sm:mt-10 sm:flex sm:flex-wrap">
+              <ApplyButton size="lg" variant="bone" className="min-h-14 w-full sm:w-auto">
                 {hero.primaryCta}
               </ApplyButton>
-              <ApplyButton size="lg" variant="ghost-dark" href="#break-hunter">
+              <ApplyButton size="lg" variant="ghost-dark" href="#break-hunter" className="min-h-14 w-full sm:w-auto">
                 Play Break Hunter
               </ApplyButton>
             </div>
           </Reveal>
 
           <Reveal delay={320}>
-            <ul className="eyebrow mt-12 flex flex-wrap gap-x-8 gap-y-3 text-paper/70">
+            <ul className="eyebrow mt-12 hidden flex-wrap sm:flex gap-x-8 gap-y-3 text-paper/70">
               {hero.meta.map((m) => (
                 <li key={m} className="flex items-center gap-2">
                   <span className="h-1 w-1 rounded-full bg-champagne" />

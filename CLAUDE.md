@@ -37,6 +37,18 @@ TanStack Start (React 19, Vite 8, Tailwind v4, SSR) · Lovable-connected (never 
 
 - Text is non-selectable and cursor is the arrow everywhere (base layer in styles.css); only `input`/`textarea` are selectable with an I-beam.
 
+## Mobile-first (80-90% of traffic is phones)
+- Sticky pins use `svh` and measure the sticky child (not `innerHeight`) so the iOS address bar can't cause jumps.
+- Navbar: bottom-sheet menu is a SIBLING of `<header>` (a `backdrop-filter` parent would trap a fixed child). `MobileBar` = thumb-zone Apply + WhatsApp + Call, hides near `#apply`.
+- Contact: `company.phone` / `company.whatsapp` in program.ts (assumed +91 India). `waUrl` exported from Navbar.
+- Curriculum: desktop = pinned card deck; `<lg` = `CurriculumDeck` (snap-scroll cards, neighbours scale/dim, chip strip + dots).
+- Break Hunter: `md:hidden` `SwipeDeck` (drag right = break, left = clean, haptics) while playing; list view on md+; review list stacks Ours/Theirs on phones.
+- Role Finder: question above live bars on phones. `buzz()` haptics, `useCanShare()` + `shareText()` for native share.
+- Cut on phones (hidden < md): Mentors, Testimonials, ProgramDetails, Experience pillars, Outcomes progression, hero meta list + ghost text.
+- Perf on phones: film grain off, `backdrop-blur` only md+, click sparks reduced, hover effects gated (Tailwind v4 wraps `hover:` in `@media (hover:hover)`); `Spot` lights the card in the middle band via IntersectionObserver on `(hover:none)`.
+- Certificate tilt is mouse-only (touch would fight scrolling).
+- Inputs must stay >=16px (iOS zoom). Tap targets >=44px (`min-h-11`/`min-h-14`).
+
 ## Gotchas
 - Dev hydration warning about `<html>` attrs = browser extension, ignore.
 - Windows npm needs native bindings: `npm i --no-save @rolldown/binding-win32-x64-msvc@1.2.1 @oxc-parser/binding-win32-x64-msvc` (one command).
@@ -48,4 +60,5 @@ TanStack Start (React 19, Vite 8, Tailwind v4, SSR) · Lovable-connected (never 
 ## Decisions / TODO
 - Redesign 2026-09-24: full theme swap + interactive sections (see above).
 - TODO: wire Apply form to backend/email; replace placeholder mentors/testimonials; real pricing.
-- TODO: visually QA at 375/768/1440 (pinned sections especially).
+- TODO: visually QA on real phones (360x640, 390x844, 412x915) + iOS Safari; nothing mobile has been eyeballed yet.
+- TODO: confirm WhatsApp number country code (+91 assumed).

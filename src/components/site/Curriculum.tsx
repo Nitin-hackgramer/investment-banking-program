@@ -1,9 +1,17 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { curriculum } from "@/data/program";
 import { cn } from "@/lib/utils";
 import { Section, SectionHeader, useStickyStep, cssVars } from "./primitives";
 
-function ModuleDetail({ index, still = false }: { index: number; still?: boolean }) {
+function ModuleDetail({
+  index,
+  still = false,
+  compact = false,
+}: {
+  index: number;
+  still?: boolean;
+  compact?: boolean;
+}) {
   const m = curriculum[index]!;
   const a = still ? "" : "anim-swap";
   return (
@@ -19,7 +27,7 @@ function ModuleDetail({ index, still = false }: { index: number; still?: boolean
         </p>
       </div>
 
-      <div className="grid gap-7 sm:grid-cols-2">
+      <div className={cn("grid gap-7", compact ? "gap-5" : "sm:grid-cols-2")}>
         <div className={a} style={cssVars({ "--i": 2 })}>
           <p className="eyebrow text-paper/45">Topics covered</p>
           <ul className="mt-3 space-y-2.5">
@@ -64,7 +72,6 @@ function ModuleDetail({ index, still = false }: { index: number; still?: boolean
 export function Curriculum() {
   const n = curriculum.length;
   const { ref, active, goTo } = useStickyStep(n);
-  const [open, setOpen] = useState(0);
 
   return (
     <Section id="curriculum" tone="ink" bare className="px-0! py-0!">
@@ -77,7 +84,7 @@ export function Curriculum() {
               Eight chapters. <em className="text-scarlet">Scroll</em> to walk them.
             </>
           }
-          description="Each chapter builds on the last. Keep scrolling and the syllabus turns its own pages, or jump straight to any chapter."
+          description="Each chapter builds on the last. Swipe through them on your phone, or scroll on desktop and the syllabus turns its own pages."
         />
       </div>
 
@@ -85,9 +92,9 @@ export function Curriculum() {
       <div
         ref={ref}
         className="relative hidden lg:block"
-        style={{ height: `calc(100dvh + ${n * 55}vh)` }}
+        style={{ height: `calc(100svh + ${n * 55}svh)` }}
       >
-        <div className="sticky top-0 flex h-[100dvh] items-center overflow-hidden">
+        <div className="sticky top-0 flex h-[100svh] items-center overflow-hidden">
           {/* ghost numeral */}
           <span
             key={active}
@@ -145,7 +152,7 @@ export function Curriculum() {
             </div>
 
             {/* Card deck: each chapter is a card that slides up over the last as you scroll. */}
-            <div className="relative h-[min(40rem,78dvh)]">
+            <div className="relative h-[min(40rem,78svh)]">
               {curriculum.map((m, i) => (
                 <div
                   key={m.id}
@@ -175,50 +182,148 @@ export function Curriculum() {
         </div>
       </div>
 
-      {/* Mobile / tablet: tap to open */}
-      <div className="px-5 pb-24 sm:px-8 lg:hidden">
-        <ol className="mx-auto max-w-2xl border-t border-paper/15">
-          {curriculum.map((m, i) => {
-            const isOpen = i === open;
-            return (
-              <li key={m.id} className="border-b border-paper/15">
-                <button
-                  type="button"
-                  onClick={() => setOpen(isOpen ? -1 : i)}
-                  aria-expanded={isOpen}
-                  className="flex w-full items-center gap-4 py-5 text-left"
-                >
-                  <span
-                    className={cn(
-                      "font-display text-3xl leading-none",
-                      isOpen ? "text-scarlet" : "text-paper/35",
-                    )}
-                  >
-                    {m.number}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-base text-paper">{m.title}</span>
-                    <span className="eyebrow mt-1 block text-paper/35">{m.duration}</span>
-                  </span>
-                  <span
-                    className={cn(
-                      "text-2xl text-paper/50 transition-transform duration-300 ease-[var(--ease-out)]",
-                      isOpen && "rotate-45 text-scarlet",
-                    )}
-                  >
-                    +
-                  </span>
-                </button>
-                {isOpen ? (
-                  <div className="pb-8">
-                    <ModuleDetail index={i} />
-                  </div>
-                ) : null}
-              </li>
-            );
-          })}
-        </ol>
+      {/* Phones / tablets: swipeable deck */}
+      <div className="pb-14 lg:hidden">
+        <CurriculumDeck />
       </div>
     </Section>
+  );
+}
+
+/**
+ * Touch version: snap-scrolling cards. The card nearest the centre is full size;
+ * neighbours shrink and dim, driven by scroll position (transform/opacity only).
+ */
+function CurriculumDeck() {
+  const scroller = useRef<HTMLDivElement>(null);
+  const strip = useRef<HTMLDivElement>(null);
+  const cards = useRef<(HTMLDivElement | null)[]>([]);
+  const chips = useRef<(HTMLButtonElement | null)[]>([]);
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const sc = scroller.current;
+    if (!sc) return;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const mid = sc.scrollLeft + sc.clientWidth / 2;
+      let best = 0;
+      let bestD = Infinity;
+      cards.current.forEach((c, i) => {
+        if (!c) return;
+        const off = Math.abs(c.offsetLeft + c.offsetWidth / 2 - mid);
+        const d = Math.min(1, off / c.offsetWidth);
+        c.style.transform = `scale(${1 - d * 0.07})`;
+        c.style.opacity = String(1 - d * 0.5);
+        if (off < bestD) {
+          bestD = off;
+          best = i;
+        }
+      });
+      setActive(best);
+    };
+    const on = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
+    sc.addEventListener("scroll", on, { passive: true });
+    window.addEventListener("resize", on);
+    return () => {
+      sc.removeEventListener("scroll", on);
+      window.removeEventListener("resize", on);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  // keep the active chip centred in the number strip
+  useEffect(() => {
+    const st = strip.current;
+    const c = chips.current[active];
+    if (st && c) st.scrollTo({ left: c.offsetLeft - (st.clientWidth - c.offsetWidth) / 2, behavior: "smooth" });
+  }, [active]);
+
+  const goTo = (i: number) => {
+    const sc = scroller.current;
+    const c = cards.current[i];
+    if (sc && c) sc.scrollTo({ left: c.offsetLeft - (sc.clientWidth - c.offsetWidth) / 2, behavior: "smooth" });
+  };
+
+  return (
+    <div>
+      <div
+        ref={strip}
+        className="relative flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] sm:px-8"
+        role="tablist"
+        aria-label="Chapters"
+      >
+        {curriculum.map((m, i) => (
+          <button
+            key={m.id}
+            ref={(el) => {
+              chips.current[i] = el;
+            }}
+            type="button"
+            role="tab"
+            aria-selected={i === active}
+            onClick={() => goTo(i)}
+            className={cn(
+              "press min-h-11 shrink-0 rounded-full border px-4 font-display text-xl transition-colors duration-200",
+              i === active
+                ? "border-scarlet bg-scarlet text-paper"
+                : "border-paper/20 text-paper/60",
+            )}
+          >
+            {m.number}
+          </button>
+        ))}
+      </div>
+
+      <div
+        ref={scroller}
+        className="relative mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-[9%] pb-6 [scrollbar-width:none]"
+      >
+        {curriculum.map((m, i) => (
+          <div
+            key={m.id}
+            ref={(el) => {
+              cards.current[i] = el;
+            }}
+            className={cn(
+              "relative w-[82%] max-w-md shrink-0 snap-center overflow-hidden rounded-3xl border border-paper/12 p-5 shadow-[inset_0_1px_0_oklch(1_0_0/0.08)] will-change-transform",
+              i % 2 ? "bg-[oklch(0.27_0.1_24)]" : "bg-[oklch(0.21_0.045_20)]",
+            )}
+          >
+            <span
+              aria-hidden
+              className="pointer-events-none absolute -top-4 right-2 select-none font-display text-[8rem] leading-none text-paper/[0.06] italic"
+            >
+              {m.number}
+            </span>
+            <div className="relative">
+              <ModuleDetail index={i} still compact />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex items-center justify-center gap-4">
+        <span className="eyebrow tabular text-paper/50">
+          {String(active + 1).padStart(2, "0")} / {String(curriculum.length).padStart(2, "0")}
+        </span>
+        <div className="flex gap-1.5" aria-hidden>
+          {curriculum.map((m, i) => (
+            <span
+              key={m.id}
+              className={cn(
+                "h-1.5 rounded-full transition-[width,background-color] duration-300 ease-[var(--ease-out)]",
+                i === active ? "w-6 bg-scarlet" : "w-1.5 bg-paper/25",
+              )}
+            />
+          ))}
+        </div>
+        <span className="eyebrow text-paper/40">Swipe</span>
+      </div>
+    </div>
   );
 }

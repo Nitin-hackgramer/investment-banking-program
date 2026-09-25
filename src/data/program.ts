@@ -9,6 +9,9 @@ export const company = {
   name: "Acdyon Technologies",
   program: "Investment Banking Operations Program",
   email: "shishir@acdyon.com",
+  phone: "+91 79862 40239",
+  // wa.me wants digits only, with country code (assumed India, +91)
+  whatsapp: "917986240239",
   tagline:
     "Practical, operations-first training for careers in investment banking and capital markets.",
 };

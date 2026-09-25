@@ -108,6 +108,8 @@
   html,
   body {
     overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
+    touch-action: manipulation;
   }
 
   html {
@@ -203,7 +205,15 @@
   }
 }
 
-/* Film grain: fixed, non-interactive, never on scroll containers. */
+/* Film grain: desktop only. Full-screen blend layers are costly on phones. */
+body::after {
+  display: none;
+}
+@media (min-width: 768px) and (hover: hover) {
+  body::after {
+    display: block;
+  }
+}
 body::after {
   content: "";
   position: fixed;
@@ -288,6 +298,12 @@ body::after {
   }
   &:hover::before {
     opacity: 1;
+  }
+  /* touch: the card in the middle of the screen lights up (set by <Spot>) */
+  @media (hover: none) {
+    &[data-lit]::before {
+      opacity: 1;
+    }
   }
 }
 
