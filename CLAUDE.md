@@ -35,6 +35,8 @@ TanStack Start (React 19, Vite 8, Tailwind v4, SSR) · Lovable-connected (never 
 
 - Custom scrollbar (ink track, crimson thumb) in styles.css; `ClickFx` (primitives) spawns a champagne/scarlet ring + sparks on every primary click via WAAPI.
 
+- Text is non-selectable and cursor is the arrow everywhere (base layer in styles.css); only `input`/`textarea` are selectable with an I-beam.
+
 ## Gotchas
 - Dev hydration warning about `<html>` attrs = browser extension, ignore.
 - Windows npm needs native bindings: `npm i --no-save @rolldown/binding-win32-x64-msvc@1.2.1 @oxc-parser/binding-win32-x64-msvc` (one command).

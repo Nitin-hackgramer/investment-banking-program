@@ -121,6 +121,39 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  /* Marketing copy is not selectable and shows the arrow, not the I-beam text cursor.
+     Form fields stay selectable/editable. */
+  body {
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: default;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  input,
+  textarea {
+    -webkit-user-select: text;
+    user-select: text;
+    cursor: text;
+  }
+
+  a,
+  button,
+  select,
+  label,
+  [role="button"],
+  [role="tab"] {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  img {
+    -webkit-user-drag: none;
+  }
+
   ::selection {
     background: var(--scarlet);
     color: var(--paper);
